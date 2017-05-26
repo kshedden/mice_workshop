@@ -1,6 +1,9 @@
 Handling missing data in Python Statsmodels with MICE
 -----------------------------------------------------
 
+[Link](
+https://github.com/statsmodels/statsmodels/blob/master/statsmodels/imputation/mice.py) to the Statsmodels MICE source code
+
 In a regression analysis, individual data values may be missing for
 either the dependent variable or for one one or more of the
 independent variables.  Most standard regression analysis techniques
@@ -11,10 +14,10 @@ regression analysis, focusing in particular on an approach called
 _Multiple Imputation with Chained Equations_ (MICE).
 
 In a standard regression analysis with one dependent variable (DV) and
-one or more independent variables (IV's), the following patterns of
-missingness can occur (comments below about "information" are not
-precise and depend on additional aspects of the missingness mechanism
-discussed further below):
+one or more independent variables (IV's), four basic patterns of
+missingness can occur, as described below (comments below about
+"information" are not precise and may depend on additional aspects of
+the missingness mechanism):
 
 * _All IV's and the DV are missing_: in general such an observation
   contains no useful information and can be excluded from the
@@ -44,7 +47,7 @@ discussed further below):
 ## Missingness mechanisms
 
 This is a big topic, we only cover it briefly here.  The essential
-idea is whether the status of different data values being missing are
+issue is whether the status of different data values being missing are
 independent random events.  To formalize this, let I(i, j) = 1 if
 covariate j in observation i is missing, and I(i, j) = 0 otherwise.
 Similarly, let J(i) = 1 if the outcome (DV) is missing for observation
@@ -53,14 +56,14 @@ i, and J(i) = 0 otherwise.
 The most basic type of missingness mechanism is "missing completely at
 random" (MCAR).  This means that whether a given data value is missing
 is completely independent of whether any other data value is missing,
-and further is unrelated to the values of any of the covariates, or
+and further is unrelated to the values of any of the covariates, or to
 the values of the outcome (DV).  Stated slightly more formally, this
 means that the elements of I and J are mutually independent of each
 other, and of X and Y.
 
-A slightly more realistic missingness mechanism is "missing at
-random".  This means that whether a value is missing is independent of
-another value being missing, conditioned on the observed data.
+A slightly more realistic missingness mechanism is "missing at random"
+(MAR).  This means that whether a value is missing is independent of
+any other value being missing, conditioned on the observed data.
 Slightly more precisely, it means that the elements of I and J are
 mutually independent, given Xobs and Yobs (the observed components of
 X and Y).
@@ -90,10 +93,9 @@ missing data compare in relative terms in the MAR, MCAR, and in
 A very simple way to deal with missing data in a regression analysis
 is to drop all cases with any missing values, either in the IV's or in
 the DV.  This is called "complete case analysis", or sometimes,
-"list-wise deletion".  Most statistical models in Python
-[Statsmodels](https://github.com/statsmodels) can be fit using
-complete case analysis by specifying the `missing='drop'` keyword
-argument.
+"list-wise deletion".  Most statistical models in Statsmodels can be
+fit using complete case analysis by specifying the `missing='drop'`
+keyword argument.
 
 Complete case analysis will not introduce bias in the MAR/MCAR
 setting, but substantial bias can result by applying it in the MNAR
@@ -111,20 +113,20 @@ also includes variations on the "last observation carried forward"
 approach for time series or other sequential data.
 
 We will not discuss single imputation in detail here, but see the
-documentation for the Pandas [fillna method](
+documentation for the Pandas [fillna](
 https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.fillna.html)
-for procedures that facilitate single imputation with Pandas data
-frames.
+method for procedures that facilitate single imputation with Pandas
+data frames.
 
 ## Multiple imputation
 
 Multiple Imputation (MI) is any setting in which the missing values
 are imputed multiple times, resulting in several complete data sets.
 The imputation should be random, so that the different imputed data
-sets are different from each other.  The imputation should be
-conducted such that the variation in the imputed values for a given
-missing value reflects the uncertainty in our ability to predict that
-value.
+sets are different from each other.  In addition, the imputation
+should be conducted such that the variation in the imputed values for
+a given missing value reflects the uncertainty in our ability to
+predict that value.
 
 The usual approach for MI is to fit the model of interest to each
 imputed data set (which is straightforward since the imputed data sets
