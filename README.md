@@ -47,7 +47,7 @@ the missingness mechanism):
 ## Missingness mechanisms
 
 This is a big topic, we only cover it briefly here.  The essential
-issue is whether the status of different data values being missing are
+issue is whether the missingness status of different data values are
 independent random events.  To formalize this, let I(i, j) = 1 if
 covariate j in observation i is missing, and I(i, j) = 0 otherwise.
 Similarly, let J(i) = 1 if the outcome (DV) is missing for observation
@@ -95,22 +95,22 @@ is to drop all cases with any missing values, either in the IV's or in
 the DV.  This is called "complete case analysis", or sometimes,
 "list-wise deletion".  Most statistical models in Statsmodels can be
 fit using complete case analysis by specifying the `missing='drop'`
-keyword argument.
+keyword argument when constructing the model.
 
 Complete case analysis will not introduce bias in the MAR/MCAR
 setting, but substantial bias can result by applying it in the MNAR
-setting.  As for variance, complete case analysis has higher variance
-than other options (discussed below) in the MAR and MCAR settings.
-Its main advantage is its simplicity.
+setting.  Complete case analysis has higher variance than other
+options (discussed below) in the MAR and MCAR settings.  Its main
+advantage is its simplicity.
 
 ## Single imputation
 
 Single imputation refers to any procedure that replaces each missing
-values with a prediction of the unobserved data value.  This includes
-imputation procedures based on the mean as well as various
-regression-based procedures that we will not cover further here.  It
-also includes variations on the "last observation carried forward"
-approach for time series or other sequential data.
+value with a prediction of it.  This approach includes imputation
+procedures based on the mean as well as various regression-based
+procedures that we will not cover further here.  It also includes
+variations on the "last observation carried forward" approach for time
+series or other sequential data.
 
 We will not discuss single imputation in detail here, but see the
 documentation for the Pandas [fillna](
@@ -120,13 +120,13 @@ data frames.
 
 ## Multiple imputation
 
-Multiple Imputation (MI) is any setting in which the missing values
-are imputed multiple times, resulting in several complete data sets.
-The imputation should be random, so that the different imputed data
-sets are different from each other.  In addition, the imputation
-should be conducted such that the variation in the imputed values for
-a given missing value reflects the uncertainty in our ability to
-predict that value.
+Multiple Imputation (MI) refers to any approach in which the missing
+values are imputed multiple times, resulting in several complete data
+sets.  The imputation should be random, so that the imputed data sets
+are different from each other.  In addition, the imputation should be
+conducted such that the variation in the imputed values for a given
+missing value reflects the uncertainty in our ability to predict that
+value.
 
 The usual approach for MI is to fit the model of interest to each
 imputed data set (which is straightforward since the imputed data sets
@@ -135,7 +135,7 @@ values for the parameter of interest, b(1), ..., b(m), and m
 corresponding standard errors, s(1), ..., s(m).  These values are then
 combined as follows:
 
-* The estimates are pooled taking their mean: b* = [b(1) + ... +
+* The estimates are pooled by taking their mean: b* = [b(1) + ... +
   b(m)]/m.
 
 * The standard deviations are pooled by averaging their squares: v =
@@ -157,8 +157,8 @@ approach given above is accurate enough.
 
 ## Multiple Imputation with Chained Equations (MICE)
 
-MICE is one way to produce multiply imputed data sets, that can then
-be analyzed as described in the preceding section.  To illustrate,
+MICE is one way to produce multiply imputed data sets that can be
+analyzed as described in the preceding section.  To illustrate,
 suppose we have a regression with a DV Y and two IV's X1 and X2.  The
 basic idea of MICE is that we first temporarily impute the missing
 values using any convenient procedure, say mean imputation.  This
@@ -174,7 +174,14 @@ the working data:
 These models could be fit using OLS, GLM, or any other modeling
 procedure.  Next, a technique called _predictive mean matching_ (PMM)
 is used to update the missing values.  To illustrate, suppose Y(1) is
-missing.  We obtain the fitted value Y_hat(i) for i=1, ..., n, and
+missing.  We obtain the fitted values Y_hat(i) for i=1, ..., n, and
 obtain the k closest Y_hat(j) values to Y_hat(i), where k is a tuning
-parameter of the PMM procedure.  We then randomly choose on index
+parameter of the PMM procedure.  We then randomly choose an index
 value from this set, say j*, and update the imputed Y(1) with Y(j*).
+Each round of MICE cycles through the missing values in some order,
+updating each of them in this way.  This produces one imputed data
+set.  We then iterate this process, by refitting the imputation
+models (to the most recently imputed data set), then passing again
+through all the missing values and imputing each one in turn.  This
+process is imputed until the desired number (m) of imputed data sets
+is obtained.
